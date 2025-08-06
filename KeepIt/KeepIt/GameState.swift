@@ -18,11 +18,24 @@ enum GamePhase {
 @MainActor
 class GameState: ObservableObject {
     @Published var currentPhase: GamePhase = .menu
-    @Published var audioEnabled: Bool = true
+    @Published var audioEnabled: Bool = true {
+        didSet {
+            handleAudioToggle()
+        }
+    }
     @Published var hasSavedGame: Bool = false
     @Published var score: Int = 0
     @Published var currentLevel: Int = 1
     @Published var showImmersiveSpace: Bool = true
+    
+    private let audioManager = AudioManager.shared
+    
+    init() {
+        // Start background music when game state is initialized
+        if audioEnabled {
+            audioManager.startBackgroundMusic()
+        }
+    }
     
     func startNewGame() {
         currentPhase = .playing
@@ -46,5 +59,13 @@ class GameState: ObservableObject {
     
     func toggleAudio() {
         audioEnabled.toggle()
+    }
+    
+    private func handleAudioToggle() {
+        if audioEnabled {
+            audioManager.startBackgroundMusic()
+        } else {
+            audioManager.stopBackgroundMusic()
+        }
     }
 }
