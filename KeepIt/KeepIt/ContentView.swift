@@ -16,13 +16,15 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
+            // Always show immersive space content (football field)
+            Color.clear
+            
+            // Overlay UI based on game state
             switch gameState.currentPhase {
-            case .menu:
+            case .menu, .paused:
                 MainMenuView(gameState: gameState)
             case .playing:
                 GameplayView(gameState: gameState)
-            case .paused:
-                PauseView(gameState: gameState)
             case .gameOver:
                 GameOverView(gameState: gameState)
             }
@@ -49,43 +51,37 @@ struct ContentView: View {
     }
 }
 
-// Placeholder views for different game states
+// Gameplay view - only shows pause button in top left corner
 struct GameplayView: View {
     @ObservedObject var gameState: GameState
     
     var body: some View {
         VStack {
-            Text("Game Playing")
-                .font(.largeTitle)
-                .foregroundStyle(.white)
-            
-            Button("Pause") {
-                gameState.pauseGame()
+            HStack {
+                // Persistent pause button in top left corner
+                Button(action: {
+                    gameState.pauseGame()
+                }) {
+                    Image(systemName: "pause.circle.fill")
+                        .font(.system(size: 32))
+                        .foregroundStyle(.white)
+                        .background(
+                            Circle()
+                                .fill(.black.opacity(0.6))
+                                .frame(width: 44, height: 44)
+                        )
+                        .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 2)
+                }
+                .buttonStyle(PlainButtonStyle())
+                .padding(.top, 20)
+                .padding(.leading, 20)
+                
+                Spacer()
             }
-            .buttonStyle(MenuButtonStyle())
+            
+            Spacer()
         }
-    }
-}
-
-struct PauseView: View {
-    @ObservedObject var gameState: GameState
-    
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("Game Paused")
-                .font(.largeTitle)
-                .foregroundStyle(.white)
-            
-            Button("Continue") {
-                gameState.continueGame()
-            }
-            .buttonStyle(MenuButtonStyle())
-            
-            Button("Main Menu") {
-                gameState.returnToMenu()
-            }
-            .buttonStyle(MenuButtonStyle())
-        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 

@@ -80,5 +80,4 @@ func setupFootballField(content: RealityViewContent) async {
 
 #Preview {
     ImmersiveView()
-        .previewLayout(.sizeThatFits)
 }
