@@ -9,9 +9,17 @@ import SwiftUI
 
 @main
 struct KeepItApp: App {
+    @StateObject private var gameState = GameState()
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(gameState)
+        }
+        
+        ImmersiveSpace(id: "ImmersiveSpace") {
+            ImmersiveView()
+                .environmentObject(gameState)
         }
     }
 }
