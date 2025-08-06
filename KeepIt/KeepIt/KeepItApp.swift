@@ -16,6 +16,7 @@ struct KeepItApp: App {
             ContentView()
                 .environmentObject(gameState)
         }
+        .windowStyle(.plain)
         
         ImmersiveSpace(id: "ImmersiveSpace") {
             ImmersiveView()

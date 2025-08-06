@@ -12,7 +12,21 @@ struct MainMenuView: View {
     
     var body: some View {
         ZStack {
-            // Main content centered in a glass panel
+            // Thick glass background panel
+            RoundedRectangle(cornerRadius: 24)
+                .fill(.thickMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24)
+                        .fill(Color.black.opacity(0.7))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24)
+                        .stroke(Color.white.opacity(0.3), lineWidth: 2)
+                )
+                .shadow(color: Color.black.opacity(0.8), radius: 40, x: 0, y: 20)
+                .frame(width: 500, height: 600)
+            
+            // Content on top
             VStack(spacing: 50) {
                 // Title
                 Text("Keep It!")
@@ -61,17 +75,6 @@ struct MainMenuView: View {
                     .buttonStyle(PlainButtonStyle())
                 }
             }
-            .padding(60)
-            .background(
-                // Glass panel effect
-                RoundedRectangle(cornerRadius: 24)
-                    .fill(Color.black.opacity(0.3))
-                    .background(
-                        RoundedRectangle(cornerRadius: 24)
-                            .fill(.ultraThinMaterial.opacity(0.8))
-                    )
-                    .shadow(color: Color.black.opacity(0.3), radius: 20, x: 0, y: 10)
-            )
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

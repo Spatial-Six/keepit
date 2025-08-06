@@ -38,7 +38,7 @@ class AudioManager {
         do {
             backgroundMusicPlayer = try AVAudioPlayer(contentsOf: musicURL)
             backgroundMusicPlayer?.numberOfLoops = -1 // Loop indefinitely
-            backgroundMusicPlayer?.volume = 0.1
+            backgroundMusicPlayer?.volume = 0.05
             backgroundMusicPlayer?.prepareToPlay()
             isInitialized = true
         } catch {
