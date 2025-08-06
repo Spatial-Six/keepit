@@ -28,8 +28,8 @@ func createGrassField(content: RealityViewContent) async {
         
         // Field dimensions - extended for better coverage
         let patchSize: Float = 5.0
-        let fieldWidth: Float = 50
-        let fieldDepth: Float = 30
+        let fieldWidth: Float = 25
+        let fieldDepth: Float = 25
         
         // Calculate grid dimensions
         let patchesX = Int(ceil(fieldWidth / patchSize))
@@ -56,6 +56,25 @@ func createGrassField(content: RealityViewContent) async {
 @MainActor
 func setupFootballField(content: RealityViewContent) async {
     await createGrassField(content: content)
+    setupLighting(content: content)
+}
+
+@MainActor
+func setupLighting(content: RealityViewContent) {
+    // Create directional light to simulate sunlight
+    let sunLight = Entity()
+    let directionalLight = DirectionalLightComponent(
+        color: .white,
+        intensity: 10000
+    )
+    
+    sunLight.components.set(directionalLight)
+    
+    // Position sun at an angle to create natural daylight effect
+    // Looking down from above and slightly behind
+    sunLight.look(at: [0, 0, 0], from: [10, 15, -10], relativeTo: nil)
+    
+    content.add(sunLight)
 }
 
 #Preview {

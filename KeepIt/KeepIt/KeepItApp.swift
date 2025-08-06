@@ -21,5 +21,6 @@ struct KeepItApp: App {
             ImmersiveView()
                 .environmentObject(gameState)
         }
+        .immersionStyle(selection: .constant(.full), in: .full)
     }
 }
