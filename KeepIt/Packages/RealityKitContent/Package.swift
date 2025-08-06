@@ -27,6 +27,9 @@ let package = Package(
         .target(
             name: "RealityKitContent",
             dependencies: [],
+            resources: [
+                .process("Grass.usdz")
+            ],
             swiftSettings: [
                 .enableUpcomingFeature("MemberImportVisibility")
             ]),
