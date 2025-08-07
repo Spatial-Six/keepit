@@ -221,8 +221,8 @@ extension ImmersiveView {
                         // Remove from game state and increment score
                         Task { @MainActor in
                             gameState.activeBalls.removeAll { $0.id == ballId }
-                            gameState.score += 1
-                            print("⚽ Ball saved with physics collision! Score: \(gameState.score)")
+                            gameState.ballSaved()
+                            print("⚽ Ball saved with physics collision! Score: \(gameState.totalScore)")
                         }
                     }
                 }
@@ -343,9 +343,9 @@ extension ImmersiveView {
         // Update game state
         Task { @MainActor in
             gameState.activeBalls.removeAll { $0.id == ballId }
-            gameState.score += 1
+            gameState.ballSaved()
             gameState.showSaveFeedback()
-            print("⚽ Score: \(gameState.score)")
+            print("⚽ Level Score: \(gameState.levelScore), Total: \(gameState.totalScore)")
         }
     }
     
@@ -361,6 +361,7 @@ extension ImmersiveView {
         // Update game state with miss feedback
         Task { @MainActor in
             gameState.activeBalls.removeAll { $0.id == ballId }
+            gameState.ballMissed()
             gameState.showMissFeedback()
         }
     }
@@ -462,9 +463,9 @@ extension ImmersiveView {
                 gameState.activeBalls.removeAll { $0.id == ballId }
                 
                 // Increment score
-                gameState.score += 1
+                gameState.ballSaved()
                 
-                print("⚽ Ball saved with physics collision! Score: \(gameState.score)")
+                print("⚽ Ball saved with physics collision! Score: \(gameState.totalScore)")
             }
         }
     }

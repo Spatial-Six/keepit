@@ -13,6 +13,8 @@ enum GamePhase {
     case menu
     case playing
     case paused
+    case levelComplete
+    case gameComplete
     case gameOver
 }
 
@@ -37,8 +39,11 @@ class GameState: ObservableObject {
         }
     }
     @Published var hasSavedGame: Bool = false
-    @Published var score: Int = 0
+    @Published var totalScore: Int = 0
     @Published var currentLevel: Int = 1
+    @Published var levelScore: Int = 0
+    @Published var ballsSpawned: Int = 0
+    @Published var ballsCompleted: Int = 0
     @Published var showImmersiveSpace: Bool = true
     @Published var activeBalls: [Ball] = []
     @Published var countdownValue: Int = 0
@@ -67,8 +72,11 @@ class GameState: ObservableObject {
     
     func startNewGame() {
         currentPhase = .playing
-        score = 0
+        totalScore = 0
         currentLevel = 1
+        levelScore = 0
+        ballsSpawned = 0
+        ballsCompleted = 0
         hasSavedGame = false
         activeBalls.removeAll()
         
@@ -108,10 +116,78 @@ class GameState: ObservableObject {
         }
     }
     
+    // MARK: - Level Management
+    func getBallSpeed() -> Float {
+        switch currentLevel {
+        case 1: return 8.0
+        case 2: return 15.0
+        case 3: return 20.0
+        default: return 8.0
+        }
+    }
+    
+    func checkLevelComplete() {
+        if ballsCompleted >= 10 {
+            currentPhase = .levelComplete
+            stopGameTimer()
+            stopCountdownTimer()
+        }
+    }
+    
+    func ballSaved() {
+        levelScore += 1
+        totalScore += 1
+        ballsCompleted += 1
+        checkLevelComplete()
+    }
+    
+    func ballMissed() {
+        ballsCompleted += 1
+        checkLevelComplete()
+    }
+    
+    func nextLevel() {
+        if currentLevel >= 3 {
+            // Game completed!
+            currentPhase = .gameComplete
+        } else {
+            currentLevel += 1
+            levelScore = 0
+            ballsSpawned = 0
+            ballsCompleted = 0
+            activeBalls.removeAll()
+            currentPhase = .playing
+            startCountdown()
+            startGameTimer()
+        }
+    }
+    
+    func retryLevel() {
+        levelScore = 0
+        ballsSpawned = 0
+        ballsCompleted = 0
+        activeBalls.removeAll()
+        currentPhase = .playing
+        startCountdown()
+        startGameTimer()
+    }
+    
+    func levelPassed() -> Bool {
+        return levelScore >= 5
+    }
+    
     // MARK: - Ball System
     func spawnBall() {
+        // Check if we've spawned enough balls for this level
+        if ballsSpawned >= 10 {
+            return
+        }
+        
         // Remove existing ball (only allow 1 ball at a time)
         activeBalls.removeAll()
+        
+        // Increment balls spawned counter
+        ballsSpawned += 1
         
         // Start in front of user (negative Z) with random spread
         let startX = Float.random(in: -10...10)
@@ -135,11 +211,11 @@ class GameState: ObservableObject {
         let ball = Ball(
             startPosition: startPosition,
             targetPosition: targetPosition,
-            speed: 8.0
+            speed: getBallSpeed()
         )
         
         activeBalls.append(ball)
-        print("⚽ Ball spawned: \(startPosition) → \(targetPosition)")
+        print("⚽ Ball \(ballsSpawned)/10 spawned at speed \(getBallSpeed()): \(startPosition) → \(targetPosition)")
     }
     
     @objc func updateGame() {
