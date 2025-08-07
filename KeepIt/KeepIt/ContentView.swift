@@ -89,6 +89,38 @@ struct GameplayView: View {
                 .padding(.leading, 20)
                 
                 Spacer()
+                
+                // Score display in top right corner
+                Text("Score: \(gameState.score)")
+                    .font(.system(size: 24, weight: .semibold, design: .rounded))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.white, .white.opacity(0.8)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 12)
+                    .background(
+                        Capsule()
+                            .fill(.ultraThinMaterial, style: FillStyle())
+                            .overlay(
+                                Capsule()
+                                    .stroke(
+                                        LinearGradient(
+                                            colors: [.white.opacity(0.3), .white.opacity(0.1)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        ),
+                                        lineWidth: 1
+                                    )
+                            )
+                    )
+                    .shadow(color: .black.opacity(0.25), radius: 10, x: 0, y: 5)
+                    .shadow(color: .white.opacity(0.1), radius: 2, x: 0, y: -1)
+                    .padding(.top, 20)
+                    .padding(.trailing, 20)
             }
             
             // Countdown display in center

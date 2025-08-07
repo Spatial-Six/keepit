@@ -21,6 +21,7 @@ struct ImmersiveView: View {
             
             await setupFootballField(content: content)
             setupHandSpheres(content: content)
+            setupCollisionHandling(content: content)
         } update: { content in
             updateBalls(content: content)
         }
@@ -159,7 +160,55 @@ extension ImmersiveView {
         let sphereEntity = ModelEntity(mesh: sphere, materials: [material])
         sphereEntity.name = name
         
+        // Add collision component for physics collision detection
+        let handCollisionShape = ShapeResource.generateSphere(radius: 0.1)
+        sphereEntity.components.set(CollisionComponent(shapes: [handCollisionShape]))
+        
+        print("🖐️ Hand sphere '\(name)' created with collision component")
         return sphereEntity
+    }
+    
+    func setupCollisionHandling(content: RealityViewContent) {
+        // Subscribe to collision events
+        _ = content.subscribe(to: CollisionEvents.Began.self) { [gameState] event in
+            let entityA = event.entityA
+            let entityB = event.entityB
+            
+            // Check if this is a ball-hand collision
+            var ballEntity: Entity?
+            var handEntity: Entity?
+            
+            if entityA.name.starts(with: "Ball_") && (entityB.name == "LeftHandSphere" || entityB.name == "RightHandSphere") {
+                ballEntity = entityA
+                handEntity = entityB
+            } else if entityB.name.starts(with: "Ball_") && (entityA.name == "LeftHandSphere" || entityA.name == "RightHandSphere") {
+                ballEntity = entityB
+                handEntity = entityA
+            }
+            
+            if let ball = ballEntity, let hand = handEntity {
+                print("✋ COLLISION DETECTED! \(ball.name) hit \(hand.name)")
+                
+                // Handle ball save directly in the closure
+                let ballName = ball.name
+                if ballName.starts(with: "Ball_") {
+                    let ballIdString = String(ballName.dropFirst(5)) // Remove "Ball_" prefix
+                    if let ballId = UUID(uuidString: ballIdString) {
+                        // Remove ball from scene
+                        ball.removeFromParent()
+                        
+                        // Remove from game state and increment score
+                        Task { @MainActor in
+                            gameState.activeBalls.removeAll { $0.id == ballId }
+                            gameState.score += 1
+                            print("⚽ Ball saved with physics collision! Score: \(gameState.score)")
+                        }
+                    }
+                }
+            }
+        }
+        
+        print("🔄 Collision event subscription set up")
     }
 }
 
@@ -241,6 +290,29 @@ extension ImmersiveView {
         )
         
         print("⚽ Ball animated - duration: \(duration)s, speed: \(speed)")
+    }
+    
+    func handleBallSaveWithPhysics(ballEntity: Entity) {
+        // Find the ball ID from the entity name
+        let ballName = ballEntity.name
+        if ballName.starts(with: "Ball_") {
+            let ballIdString = String(ballName.dropFirst(5)) // Remove "Ball_" prefix
+            if let ballId = UUID(uuidString: ballIdString) {
+                // Remove from ball entities dictionary
+                if let ballModel = ballEntities[ballId] {
+                    ballModel.removeFromParent()
+                    ballEntities.removeValue(forKey: ballId)
+                }
+                
+                // Remove from game state
+                gameState.activeBalls.removeAll { $0.id == ballId }
+                
+                // Increment score
+                gameState.score += 1
+                
+                print("⚽ Ball saved with physics collision! Score: \(gameState.score)")
+            }
+        }
     }
 }
 
