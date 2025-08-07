@@ -19,6 +19,8 @@ struct ImmersiveView: View {
     @State private var arkitSession = ARKitSession()
     @State private var handTrackingProvider = HandTrackingProvider()
     @State private var latestHandAnchors: [HandAnchor.Chirality: HandAnchor] = [:]
+    @State private var currentBallPositions: [UUID: SIMD3<Float>] = [:]
+    @State private var collisionCheckTimer: Timer?
     
     var body: some View {
         RealityView { content in
@@ -27,18 +29,20 @@ struct ImmersiveView: View {
             
             await setupFootballField(content: content)
             setupHandSpheres(content: content)
-            setupCollisionHandling(content: content)
+            // setupCollisionHandling(content: content) // Disabled - using distance-based detection now
             
             // Start hand tracking and position timer
             Task {
                 await startHandTracking()
                 startPositionTimer()
+                startCollisionCheckTimer()
             }
         } update: { content in
             updateBalls(content: content)
         }
         .onDisappear {
             stopPositionTimer()
+            stopCollisionCheckTimer()
         }
     }
     
@@ -248,7 +252,7 @@ extension ImmersiveView {
     func startPositionTimer() {
         stopPositionTimer()
         
-        positionTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [self] _ in
+        positionTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [self] _ in
             printHandPositions()
         }
     }
@@ -272,6 +276,69 @@ extension ImmersiveView {
         let rightPos = SIMD3<Float>(rightHandTransform.columns.3.x, rightHandTransform.columns.3.y, rightHandTransform.columns.3.z)
         
         print("🖐️ Hand Positions - Left: (x: \(String(format: "%.2f", leftPos.x)), y: \(String(format: "%.2f", leftPos.y)), z: \(String(format: "%.2f", leftPos.z))) | Right: (x: \(String(format: "%.2f", rightPos.x)), y: \(String(format: "%.2f", rightPos.y)), z: \(String(format: "%.2f", rightPos.z)))")
+    }
+    
+    // MARK: - Distance-Based Collision Detection
+    func startCollisionCheckTimer() {
+        stopCollisionCheckTimer()
+        
+        // Check collisions at 60fps for smooth detection
+        collisionCheckTimer = Timer.scheduledTimer(withTimeInterval: 1.0/60.0, repeats: true) { [self] _ in
+            checkBallHandCollisions()
+        }
+    }
+    
+    func stopCollisionCheckTimer() {
+        collisionCheckTimer?.invalidate()
+        collisionCheckTimer = nil
+    }
+    
+    func checkBallHandCollisions() {
+        guard let leftHandAnchor = latestHandAnchors[.left],
+              let rightHandAnchor = latestHandAnchors[.right] else {
+            return
+        }
+        
+        // Get current hand positions
+        let leftHandTransform = leftHandAnchor.originFromAnchorTransform
+        let rightHandTransform = rightHandAnchor.originFromAnchorTransform
+        let leftHandPos = SIMD3<Float>(leftHandTransform.columns.3.x, leftHandTransform.columns.3.y, leftHandTransform.columns.3.z)
+        let rightHandPos = SIMD3<Float>(rightHandTransform.columns.3.x, rightHandTransform.columns.3.y, rightHandTransform.columns.3.z)
+        
+        // Check each ball for collisions
+        for (ballId, ballEntity) in ballEntities {
+            let ballPos = ballEntity.position
+            currentBallPositions[ballId] = ballPos
+            
+            // Check distance to each hand (collision radius = 15cm)
+            let collisionDistance: Float = 0.5
+            
+            let leftDistance = distance(ballPos, leftHandPos)
+            let rightDistance = distance(ballPos, rightHandPos)
+            
+            if leftDistance < collisionDistance {
+                handleBallSave(ballId: ballId, ballEntity: ballEntity, handType: "Left")
+            } else if rightDistance < collisionDistance {
+                handleBallSave(ballId: ballId, ballEntity: ballEntity, handType: "Right")
+            }
+        }
+    }
+    
+    func handleBallSave(ballId: UUID, ballEntity: ModelEntity, handType: String) {
+        let ballPos = ballEntity.position
+        print("🎉 GOAL SAVED! \(handType) hand caught ball at position: (x: \(String(format: "%.2f", ballPos.x)), y: \(String(format: "%.2f", ballPos.y)), z: \(String(format: "%.2f", ballPos.z)))")
+        
+        // Remove ball from scene and tracking
+        ballEntity.removeFromParent()
+        ballEntities.removeValue(forKey: ballId)
+        currentBallPositions.removeValue(forKey: ballId)
+        
+        // Update game state
+        Task { @MainActor in
+            gameState.activeBalls.removeAll { $0.id == ballId }
+            gameState.score += 1
+            print("⚽ Score: \(gameState.score)")
+        }
     }
 }
 
