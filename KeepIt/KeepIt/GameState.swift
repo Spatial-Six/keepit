@@ -116,10 +116,18 @@ class GameState: ObservableObject {
         let startZ: Float = Float.random(in: -25.0...(-15.0))
         let startPosition = SIMD3<Float>(startX, startY, startZ)
         
-        // Target behind user (positive Z)
-        let targetX = Float.random(in: -5...5)
-        let targetY = Float.random(in: -1.0...2.0)
-        let targetZ: Float = Float.random(in: 25.0...35.0)
+        // Target toward goal behind user (positive Z around goal position)
+        let goalCenterX: Float = 0.0
+        let goalCenterY: Float = -2.0  // Goal center height
+        let goalCenterZ: Float = 30.0  // Goal position
+        
+        // Target within goal area (make it challenging but achievable)
+        let goalWidth: Float = 1.5
+        let goalHeight: Float = 1.0
+        
+        let targetX = Float.random(in: (goalCenterX - goalWidth)...(goalCenterX + goalWidth))
+        let targetY = Float.random(in: goalCenterY...(goalCenterY + goalHeight))
+        let targetZ = Float.random(in: (goalCenterZ - 0.5)...(goalCenterZ + 0.5))
         let targetPosition = SIMD3<Float>(targetX, targetY, targetZ)
         
         let ball = Ball(

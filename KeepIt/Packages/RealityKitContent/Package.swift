@@ -29,7 +29,8 @@ let package = Package(
             dependencies: [],
             resources: [
                 .process("Grass.usdz"),
-                .process("FootBall.usdz")
+                .process("FootBall.usdz"),
+                .process("Goal.usdz")
             ],
             swiftSettings: [
                 .enableUpcomingFeature("MemberImportVisibility")

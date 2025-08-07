@@ -61,6 +61,7 @@ func createGrassField(content: RealityViewContent) async {
 @MainActor
 func setupFootballField(content: RealityViewContent) async {
     await createGrassField(content: content)
+    await createGoal(content: content)
     setupLighting(content: content)
 }
 
@@ -80,6 +81,21 @@ func setupLighting(content: RealityViewContent) {
     sunLight.look(at: [0, 0, 0], from: [10, 15, -10], relativeTo: nil)
     
     content.add(sunLight)
+}
+
+@MainActor
+func createGoal(content: RealityViewContent) async {
+    do {
+        let goalModel = try await ModelEntity(named: "Goal", in: realityKitContentBundle)
+        goalModel.position = SIMD3(0, 0, 2.0)
+        goalModel.scale = SIMD3(0.35, 0.35, 0.35)
+        let rotation180 = simd_quatf(angle: Float.pi, axis: SIMD3(0, 1, 0))
+        goalModel.orientation = rotation180
+        content.add(goalModel)
+        print("🥅 Goal loaded successfully")
+    } catch {
+        print("❌ Failed to load Goal: \(error)")
+    }
 }
 
 // MARK: - Ball Management
@@ -140,21 +156,6 @@ extension ImmersiveView {
             
         } catch {
             print("❌ Failed to load FootBall: \(error)")
-            
-            // Fallback: create simple sphere
-            let ballMesh = MeshResource.generateSphere(radius: 0.15)
-            let ballMaterial = SimpleMaterial(color: .white, roughness: 0.1, isMetallic: false)
-            let ballModel = ModelEntity(mesh: ballMesh, materials: [ballMaterial])
-            
-            ballModel.position = ball.startPosition
-            ballModel.scale = SIMD3(0.3, 0.3, 0.3)
-            ballModel.name = "Ball_\(ball.id.uuidString)"
-            
-            content.add(ballModel)
-            ballEntities[ball.id] = ballModel
-            
-            animateBall(ballModel, to: ball.targetPosition, speed: ball.speed)
-            print("⚽ Fallback ball created")
         }
     }
     
