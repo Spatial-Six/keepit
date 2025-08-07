@@ -305,10 +305,17 @@ extension ImmersiveView {
         let leftHandPos = SIMD3<Float>(leftHandTransform.columns.3.x, leftHandTransform.columns.3.y, leftHandTransform.columns.3.z)
         let rightHandPos = SIMD3<Float>(rightHandTransform.columns.3.x, rightHandTransform.columns.3.y, rightHandTransform.columns.3.z)
         
-        // Check each ball for collisions
+        // Check each ball for collisions and misses
         for (ballId, ballEntity) in ballEntities {
             let ballPos = ballEntity.position
             currentBallPositions[ballId] = ballPos
+            
+            // Check if ball reached goal area (missed save)
+            let goalZ: Float = 2.0 // Goal position
+            if ballPos.z >= goalZ + 1.8 { // Ball reached goal area
+                handleBallMiss(ballId: ballId, ballEntity: ballEntity)
+                continue // Skip collision check for missed ball
+            }
             
             // Check distance to each hand (collision radius = 15cm)
             let collisionDistance: Float = 0.5
@@ -337,7 +344,24 @@ extension ImmersiveView {
         Task { @MainActor in
             gameState.activeBalls.removeAll { $0.id == ballId }
             gameState.score += 1
+            gameState.showSaveFeedback()
             print("⚽ Score: \(gameState.score)")
+        }
+    }
+    
+    func handleBallMiss(ballId: UUID, ballEntity: ModelEntity) {
+        let ballPos = ballEntity.position
+        print("❌ GOAL! Ball missed at position: (x: \(String(format: "%.2f", ballPos.x)), y: \(String(format: "%.2f", ballPos.y)), z: \(String(format: "%.2f", ballPos.z)))")
+        
+        // Remove ball from scene and tracking
+        ballEntity.removeFromParent()
+        ballEntities.removeValue(forKey: ballId)
+        currentBallPositions.removeValue(forKey: ballId)
+        
+        // Update game state with miss feedback
+        Task { @MainActor in
+            gameState.activeBalls.removeAll { $0.id == ballId }
+            gameState.showMissFeedback()
         }
     }
 }

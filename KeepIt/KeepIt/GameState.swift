@@ -43,6 +43,9 @@ class GameState: ObservableObject {
     @Published var activeBalls: [Ball] = []
     @Published var countdownValue: Int = 0
     @Published var showCountdown: Bool = false
+    @Published var showFeedback: Bool = false
+    @Published var feedbackText: String = ""
+    @Published var feedbackColor: Color = .green
     
     private let audioManager = AudioManager.shared
     private var gameUpdateTimer: Timer?
@@ -189,5 +192,34 @@ class GameState: ObservableObject {
         countdownTimer?.invalidate()
         countdownTimer = nil
         showCountdown = false
+    }
+    
+    // MARK: - Feedback System
+    func showSaveFeedback() {
+        feedbackText = "SAVE!"
+        feedbackColor = .green
+        showFeedback = true
+        
+        // Auto-hide after 1.5 seconds
+        Task {
+            try await Task.sleep(for: .seconds(1.5))
+            await MainActor.run {
+                showFeedback = false
+            }
+        }
+    }
+    
+    func showMissFeedback() {
+        feedbackText = "MISS!"
+        feedbackColor = .red
+        showFeedback = true
+        
+        // Auto-hide after 1.5 seconds
+        Task {
+            try await Task.sleep(for: .seconds(1.5))
+            await MainActor.run {
+                showFeedback = false
+            }
+        }
     }
 }

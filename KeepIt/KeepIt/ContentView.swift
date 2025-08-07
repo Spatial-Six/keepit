@@ -143,11 +143,39 @@ struct GameplayView: View {
                     
                     Spacer()
                 }
+            }
+            // Feedback display in center (SAVE/MISS)
+            else if gameState.showFeedback {
+                VStack {
+                    Spacer()
+                    
+                    Text(gameState.feedbackText)
+                        .font(.system(size: 120, weight: .bold, design: .rounded))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [gameState.feedbackColor, gameState.feedbackColor.opacity(0.8)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        .shadow(color: .black.opacity(0.8), radius: 15, x: 0, y: 6)
+                        .scaleEffect(1.2)
+                        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: gameState.showFeedback)
+                    
+                    Spacer()
+                }
             } else {
                 Spacer()
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        // Screen color flash overlay
+        .overlay(
+            Rectangle()
+                .fill(gameState.feedbackColor.opacity(gameState.showFeedback ? 0.1 : 0.0))
+                .allowsHitTesting(false)
+                .animation(.easeInOut(duration: 0.3), value: gameState.showFeedback)
+        )
     }
 }
 
