@@ -121,8 +121,8 @@ class GameState: ObservableObject {
         let goalCenterY: Float = 0.5  // Goal center height above ground
         let goalCenterZ: Float = 2.0  // Actual goal position (2m behind user)
         
-        let goalWidth: Float = 3.0   // Half-width for targeting inside opening
-        let goalHeight: Float = 3.0  // Height from ground level
+        let goalWidth: Float = 1.0   // Half-width for targeting inside opening
+        let goalHeight: Float = 1.0  // Height from ground level
         
         let targetX = Float.random(in: (goalCenterX - goalWidth)...(goalCenterX + goalWidth))
         let targetY = Float.random(in: goalCenterY...(goalCenterY + goalHeight))

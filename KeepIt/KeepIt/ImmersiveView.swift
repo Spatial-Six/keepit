@@ -372,7 +372,7 @@ extension ImmersiveView {
             let ballModel = try await ModelEntity(named: "FootBall", in: realityKitContentBundle)
             
             ballModel.position = ball.startPosition
-            ballModel.scale = SIMD3(0.08, 0.08, 0.083)
+            ballModel.scale = SIMD3(0.05, 0.05, 0.05)
             ballModel.name = "Ball_\(ball.id.uuidString)"
             
             // Add physics components
@@ -386,7 +386,7 @@ extension ImmersiveView {
             )
             
             ballModel.components.set(PhysicsBodyComponent(
-                massProperties: .init(mass: 0.1),
+                massProperties: .init(mass: 0.06),
                 material: physicsMaterial,
                 mode: .kinematic
             ))
