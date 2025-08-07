@@ -13,6 +13,14 @@
 	</dict>
 	<key>NSHandTrackingUsageDescription</key>
 	<string>This app uses hand tracking to detect goalkeeper saves in the immersive game experience.</string>
+	<key>NSHandsTrackingUsageDescription</key>
+	<string>This app uses hand tracking to detect goalkeeper saves in the immersive game experience.</string>
+	<key>NSWorldSensingUsageDescription</key>
+	<string>This app uses world sensing to create an immersive football field environment.</string>
+	<key>NSMainCameraUsageDescription</key>
+	<string>This app uses the main camera for spatial tracking in the immersive game experience.</string>
+	<key>NSAccessoryTrackingUsageDescription</key>
+	<string>This app may track accessories for enhanced gameplay experience.</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>hand-tracking</string>

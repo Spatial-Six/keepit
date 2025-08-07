@@ -13,6 +13,12 @@ import ARKit
 struct ImmersiveView: View {
     @EnvironmentObject var gameState: GameState
     @State private var ballEntities: [UUID: ModelEntity] = [:]
+    @State private var leftHandAnchor: AnchorEntity?
+    @State private var rightHandAnchor: AnchorEntity?
+    @State private var positionTimer: Timer?
+    @State private var arkitSession = ARKitSession()
+    @State private var handTrackingProvider = HandTrackingProvider()
+    @State private var latestHandAnchors: [HandAnchor.Chirality: HandAnchor] = [:]
     
     var body: some View {
         RealityView { content in
@@ -22,8 +28,17 @@ struct ImmersiveView: View {
             await setupFootballField(content: content)
             setupHandSpheres(content: content)
             setupCollisionHandling(content: content)
+            
+            // Start hand tracking and position timer
+            Task {
+                await startHandTracking()
+                startPositionTimer()
+            }
         } update: { content in
             updateBalls(content: content)
+        }
+        .onDisappear {
+            stopPositionTimer()
         }
     }
     
@@ -137,16 +152,18 @@ func createGoal(content: RealityViewContent) async {
 extension ImmersiveView {
     func setupHandSpheres(content: RealityViewContent) {
         // Left hand sphere
-        let leftHandAnchor = AnchorEntity(.hand(.left, location: .palm))
+        let leftAnchor = AnchorEntity(.hand(.left, location: .palm))
         let leftSphere = createHandSphere(color: .blue, name: "LeftHandSphere")
-        leftHandAnchor.addChild(leftSphere)
-        content.add(leftHandAnchor)
+        leftAnchor.addChild(leftSphere)
+        content.add(leftAnchor)
+        leftHandAnchor = leftAnchor
         
         // Right hand sphere  
-        let rightHandAnchor = AnchorEntity(.hand(.right, location: .palm))
+        let rightAnchor = AnchorEntity(.hand(.right, location: .palm))
         let rightSphere = createHandSphere(color: .green, name: "RightHandSphere")
-        rightHandAnchor.addChild(rightSphere)
-        content.add(rightHandAnchor)
+        rightAnchor.addChild(rightSphere)
+        content.add(rightAnchor)
+        rightHandAnchor = rightAnchor
         
         print("🖐️ Hand collision spheres created with palm anchors")
     }
@@ -209,6 +226,52 @@ extension ImmersiveView {
         }
         
         print("🔄 Collision event subscription set up")
+    }
+    
+    func startHandTracking() async {
+        do {
+            if HandTrackingProvider.isSupported {
+                try await arkitSession.run([handTrackingProvider])
+                
+                // Start monitoring hand updates
+                Task {
+                    for await update in handTrackingProvider.anchorUpdates {
+                        latestHandAnchors[update.anchor.chirality] = update.anchor
+                    }
+                }
+            }
+        } catch {
+            print("❌ Failed to start hand tracking: \(error)")
+        }
+    }
+    
+    func startPositionTimer() {
+        stopPositionTimer()
+        
+        positionTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [self] _ in
+            printHandPositions()
+        }
+    }
+    
+    func stopPositionTimer() {
+        positionTimer?.invalidate()
+        positionTimer = nil
+    }
+    
+    func printHandPositions() {
+        guard let leftHandAnchor = latestHandAnchors[.left],
+              let rightHandAnchor = latestHandAnchors[.right] else {
+            return
+        }
+        
+        // Get hand positions from anchor transforms (real 3D coordinates)  
+        let leftHandTransform = leftHandAnchor.originFromAnchorTransform
+        let rightHandTransform = rightHandAnchor.originFromAnchorTransform
+        
+        let leftPos = SIMD3<Float>(leftHandTransform.columns.3.x, leftHandTransform.columns.3.y, leftHandTransform.columns.3.z)
+        let rightPos = SIMD3<Float>(rightHandTransform.columns.3.x, rightHandTransform.columns.3.y, rightHandTransform.columns.3.z)
+        
+        print("🖐️ Hand Positions - Left: (x: \(String(format: "%.2f", leftPos.x)), y: \(String(format: "%.2f", leftPos.y)), z: \(String(format: "%.2f", leftPos.z))) | Right: (x: \(String(format: "%.2f", rightPos.x)), y: \(String(format: "%.2f", rightPos.y)), z: \(String(format: "%.2f", rightPos.z)))")
     }
 }
 
