@@ -87,12 +87,22 @@ func setupLighting(content: RealityViewContent) {
 func createGoal(content: RealityViewContent) async {
     do {
         let goalModel = try await ModelEntity(named: "Goal", in: realityKitContentBundle)
-        goalModel.position = SIMD3(0, 0, 2.0)
-        goalModel.scale = SIMD3(0.35, 0.35, 0.35)
+        goalModel.position = SIMD3(0, -1.0, 2.0)
+        goalModel.scale = SIMD3(0.4, 0.4, 0.4)
         let rotation180 = simd_quatf(angle: Float.pi, axis: SIMD3(0, 1, 0))
         goalModel.orientation = rotation180
+        
+        // Add collision physics so balls stop at goalpost
+        goalModel.generateCollisionShapes(recursive: true)
+        let goalPhysics = PhysicsBodyComponent(
+            massProperties: .init(mass: 1000.0),
+            material: PhysicsMaterialResource.generate(restitution: 0.3),
+            mode: .static
+        )
+        goalModel.components.set(goalPhysics)
+        
         content.add(goalModel)
-        print("🥅 Goal loaded successfully")
+        print("🥅 Goal loaded with collision physics")
     } catch {
         print("❌ Failed to load Goal: \(error)")
     }
@@ -128,7 +138,7 @@ extension ImmersiveView {
             let ballModel = try await ModelEntity(named: "FootBall", in: realityKitContentBundle)
             
             ballModel.position = ball.startPosition
-            ballModel.scale = SIMD3(0.1, 0.1, 0.1)
+            ballModel.scale = SIMD3(0.08, 0.08, 0.083)
             ballModel.name = "Ball_\(ball.id.uuidString)"
             
             // Add physics components

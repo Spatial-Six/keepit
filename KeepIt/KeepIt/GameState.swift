@@ -116,18 +116,17 @@ class GameState: ObservableObject {
         let startZ: Float = Float.random(in: -25.0...(-15.0))
         let startPosition = SIMD3<Float>(startX, startY, startZ)
         
-        // Target toward goal behind user (positive Z around goal position)
+        // Target toward actual goal position (matches ImmersiveView goal at Z=2.0)
         let goalCenterX: Float = 0.0
-        let goalCenterY: Float = -2.0  // Goal center height
-        let goalCenterZ: Float = 30.0  // Goal position
+        let goalCenterY: Float = 0.5  // Goal center height above ground
+        let goalCenterZ: Float = 2.0  // Actual goal position (2m behind user)
         
-        // Target within goal area (make it challenging but achievable)
-        let goalWidth: Float = 1.5
-        let goalHeight: Float = 1.0
+        let goalWidth: Float = 3.0   // Half-width for targeting inside opening
+        let goalHeight: Float = 3.0  // Height from ground level
         
         let targetX = Float.random(in: (goalCenterX - goalWidth)...(goalCenterX + goalWidth))
         let targetY = Float.random(in: goalCenterY...(goalCenterY + goalHeight))
-        let targetZ = Float.random(in: (goalCenterZ - 0.5)...(goalCenterZ + 0.5))
+        let targetZ = goalCenterZ + 1.8 // Target exactly at goal plane
         let targetPosition = SIMD3<Float>(targetX, targetY, targetZ)
         
         let ball = Ball(
