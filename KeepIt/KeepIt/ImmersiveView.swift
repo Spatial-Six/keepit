@@ -8,6 +8,7 @@
 import SwiftUI
 import RealityKit
 import RealityKitContent
+import ARKit
 
 struct ImmersiveView: View {
     @EnvironmentObject var gameState: GameState
@@ -19,6 +20,7 @@ struct ImmersiveView: View {
             content.add(skybox!)
             
             await setupFootballField(content: content)
+            setupHandSpheres(content: content)
         } update: { content in
             updateBalls(content: content)
         }
@@ -127,6 +129,37 @@ func createGoal(content: RealityViewContent) async {
         print("🥅 Goal loaded with collision physics")
     } catch {
         print("❌ Failed to load Goal: \(error)")
+    }
+}
+
+// MARK: - Hand Tracking Spheres
+extension ImmersiveView {
+    func setupHandSpheres(content: RealityViewContent) {
+        // Left hand sphere
+        let leftHandAnchor = AnchorEntity(.hand(.left, location: .palm))
+        let leftSphere = createHandSphere(color: .blue, name: "LeftHandSphere")
+        leftHandAnchor.addChild(leftSphere)
+        content.add(leftHandAnchor)
+        
+        // Right hand sphere  
+        let rightHandAnchor = AnchorEntity(.hand(.right, location: .palm))
+        let rightSphere = createHandSphere(color: .green, name: "RightHandSphere")
+        rightHandAnchor.addChild(rightSphere)
+        content.add(rightHandAnchor)
+        
+        print("🖐️ Hand collision spheres created with palm anchors")
+    }
+    
+    func createHandSphere(color: UIColor, name: String) -> ModelEntity {
+        let sphere = MeshResource.generateSphere(radius: 0.1) // 10cm diameter
+        
+        var material = UnlitMaterial()
+        material.color = .init(tint: color.withAlphaComponent(0.5))
+        
+        let sphereEntity = ModelEntity(mesh: sphere, materials: [material])
+        sphereEntity.name = name
+        
+        return sphereEntity
     }
 }
 

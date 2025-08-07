@@ -11,5 +11,11 @@
 		<key>UISceneConfigurations</key>
 		<dict/>
 	</dict>
+	<key>NSHandTrackingUsageDescription</key>
+	<string>This app uses hand tracking to detect goalkeeper saves in the immersive game experience.</string>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>hand-tracking</string>
+	</array>
 </dict>
 </plist>
