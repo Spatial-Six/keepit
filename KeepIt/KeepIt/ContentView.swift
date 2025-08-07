@@ -63,12 +63,12 @@ struct GameplayView: View {
                     gameState.pauseGame()
                 }) {
                     Image(systemName: "pause.circle.fill")
-                        .font(.system(size: 32))
+                        .font(.system(size: 50))
                         .foregroundStyle(.white)
                         .background(
                             Circle()
                                 .fill(.black.opacity(0.6))
-                                .frame(width: 44, height: 44)
+                                .frame(width: 70, height: 70)
                         )
                         .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 2)
                 }
@@ -79,7 +79,23 @@ struct GameplayView: View {
                 Spacer()
             }
             
-            Spacer()
+            // Countdown display in center
+            if gameState.showCountdown {
+                VStack {
+                    Spacer()
+                    
+                    Text("\(gameState.countdownValue)")
+                        .font(.system(size: 120, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                        .shadow(color: .black.opacity(0.8), radius: 10, x: 0, y: 4)
+                        .scaleEffect(1.2)
+                        .animation(.easeInOut(duration: 0.5), value: gameState.countdownValue)
+                    
+                    Spacer()
+                }
+            } else {
+                Spacer()
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

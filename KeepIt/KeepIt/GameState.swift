@@ -41,9 +41,12 @@ class GameState: ObservableObject {
     @Published var currentLevel: Int = 1
     @Published var showImmersiveSpace: Bool = true
     @Published var activeBalls: [Ball] = []
+    @Published var countdownValue: Int = 0
+    @Published var showCountdown: Bool = false
     
     private let audioManager = AudioManager.shared
     private var gameUpdateTimer: Timer?
+    private var countdownTimer: Timer?
     
     init() {
         // Start background music when game state is initialized
@@ -55,6 +58,8 @@ class GameState: ObservableObject {
     deinit {
         gameUpdateTimer?.invalidate()
         gameUpdateTimer = nil
+        countdownTimer?.invalidate()
+        countdownTimer = nil
     }
     
     func startNewGame() {
@@ -63,10 +68,10 @@ class GameState: ObservableObject {
         currentLevel = 1
         hasSavedGame = false
         activeBalls.removeAll()
-        startGameTimer()
         
-        // Spawn first ball immediately
-        spawnBall()
+        // Start countdown for first ball (3 second delay)
+        startCountdown()
+        startGameTimer()
     }
     
     func continueGame() {
@@ -78,11 +83,13 @@ class GameState: ObservableObject {
         currentPhase = .paused
         hasSavedGame = true
         stopGameTimer()
+        stopCountdownTimer()
     }
     
     func returnToMenu() {
         currentPhase = .menu
         stopGameTimer()
+        stopCountdownTimer()
         activeBalls.removeAll()
     }
     
@@ -135,10 +142,10 @@ class GameState: ObservableObject {
     func startGameTimer() {
         stopGameTimer()
         
-        // Spawn new ball every 5 seconds
+        // Spawn new ball every 5 seconds (but first ball is delayed by countdown)
         gameUpdateTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
             guard let self = self else { return }
-            self.updateGame()
+            self.startCountdown()
         }
         
         print("⏰ Game timer started - new ball every 5 seconds")
@@ -147,5 +154,30 @@ class GameState: ObservableObject {
     func stopGameTimer() {
         gameUpdateTimer?.invalidate()
         gameUpdateTimer = nil
+    }
+    
+    func startCountdown() {
+        stopCountdownTimer()
+        countdownValue = 3
+        showCountdown = true
+        
+        countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            
+            if self.countdownValue > 1 {
+                self.countdownValue -= 1
+            } else {
+                self.showCountdown = false
+                self.stopCountdownTimer()
+                // Spawn ball when countdown reaches 1
+                self.spawnBall()
+            }
+        }
+    }
+    
+    func stopCountdownTimer() {
+        countdownTimer?.invalidate()
+        countdownTimer = nil
+        showCountdown = false
     }
 }
