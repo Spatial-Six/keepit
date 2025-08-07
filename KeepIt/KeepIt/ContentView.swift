@@ -62,15 +62,27 @@ struct GameplayView: View {
                 Button(action: {
                     gameState.pauseGame()
                 }) {
-                    Image(systemName: "pause.circle.fill")
-                        .font(.system(size: 50))
+                    Image(systemName: "pause.fill")
+                        .font(.system(size: 28, weight: .medium))
                         .foregroundStyle(.white)
+                        .frame(width: 60, height: 60)
                         .background(
                             Circle()
-                                .fill(.black.opacity(0.6))
-                                .frame(width: 70, height: 70)
+                                .fill(.ultraThinMaterial, style: FillStyle())
+                                .overlay(
+                                    Circle()
+                                        .stroke(
+                                            LinearGradient(
+                                                colors: [.white.opacity(0.3), .white.opacity(0.1)],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            ),
+                                            lineWidth: 1
+                                        )
+                                )
                         )
-                        .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 2)
+                        .shadow(color: .black.opacity(0.25), radius: 10, x: 0, y: 5)
+                        .shadow(color: .white.opacity(0.1), radius: 2, x: 0, y: -1)
                 }
                 .buttonStyle(PlainButtonStyle())
                 .padding(.top, 20)
@@ -85,11 +97,17 @@ struct GameplayView: View {
                     Spacer()
                     
                     Text("\(gameState.countdownValue)")
-                        .font(.system(size: 120, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
+                        .font(.system(size: 150, weight: .medium, design: .rounded))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [.white, .white.opacity(0.8)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
                         .shadow(color: .black.opacity(0.8), radius: 10, x: 0, y: 4)
-                        .scaleEffect(1.2)
-                        .animation(.easeInOut(duration: 0.5), value: gameState.countdownValue)
+                        .scaleEffect(1.1)
+                        .animation(.easeInOut(duration: 0.2), value: gameState.countdownValue)
                     
                     Spacer()
                 }

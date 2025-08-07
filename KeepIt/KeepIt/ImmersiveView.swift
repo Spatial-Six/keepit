@@ -116,7 +116,7 @@ extension ImmersiveView {
             ballModel.name = "Ball_\(ball.id.uuidString)"
             
             // Add physics components
-            let ballShape = ShapeResource.generateSphere(radius: 0.15)
+            let ballShape = ShapeResource.generateSphere(radius: 0.05) // Match the visual scale (0.1 * 0.5 = 0.05)
             ballModel.components.set(CollisionComponent(shapes: [ballShape]))
             
             let physicsMaterial = PhysicsMaterialResource.generate(

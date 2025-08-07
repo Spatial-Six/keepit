@@ -145,7 +145,9 @@ class GameState: ObservableObject {
         // Spawn new ball every 5 seconds (but first ball is delayed by countdown)
         gameUpdateTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
             guard let self = self else { return }
-            self.startCountdown()
+            Task { @MainActor in
+                self.startCountdown()
+            }
         }
         
         print("⏰ Game timer started - new ball every 5 seconds")
@@ -163,14 +165,15 @@ class GameState: ObservableObject {
         
         countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             guard let self = self else { return }
-            
-            if self.countdownValue > 1 {
-                self.countdownValue -= 1
-            } else {
-                self.showCountdown = false
-                self.stopCountdownTimer()
-                // Spawn ball when countdown reaches 1
-                self.spawnBall()
+            Task { @MainActor in
+                if self.countdownValue > 1 {
+                    self.countdownValue -= 1
+                } else {
+                    self.showCountdown = false
+                    self.stopCountdownTimer()
+                    // Spawn ball when countdown reaches 1
+                    self.spawnBall()
+                }
             }
         }
     }
