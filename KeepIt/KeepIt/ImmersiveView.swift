@@ -15,10 +15,32 @@ struct ImmersiveView: View {
     
     var body: some View {
         RealityView { content in
+            let skybox = createSkybox()
+            content.add(skybox!)
+            
             await setupFootballField(content: content)
         } update: { content in
             updateBalls(content: content)
         }
+    }
+    
+    private func createSkybox() -> Entity? {
+        let largeSphere = MeshResource.generateSphere(radius: 15)
+        var skyboxMaterial = UnlitMaterial()
+        
+        do {
+            let texture = try TextureResource.load(named: "test3")
+            skyboxMaterial.color = .init(texture: .init(texture))
+        } catch {
+            print("Failed to create skybox material: \(error)")
+            return nil
+        }
+        
+        let skyboxEntity = Entity()
+        skyboxEntity.components.set(ModelComponent(mesh: largeSphere, materials: [skyboxMaterial]))
+        
+        skyboxEntity.scale = .init(x: -1, y: 1, z: 1)
+        return skyboxEntity
     }
 }
 
