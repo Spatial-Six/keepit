@@ -122,7 +122,50 @@ class GameState: ObservableObject {
         case 1: return 8.0
         case 2: return 15.0
         case 3: return 20.0
+        case 4: return 24.0
+        case 5: return 27.0
         default: return 8.0
+        }
+    }
+    
+    // Calculate reaction time based on ball flight distance and speed
+    func getReactionTime(for level: Int) -> Float {
+        let ballSpeed = getBallSpeedForLevel(level)
+        let flightDistance = calculateFlightDistance()
+        return flightDistance / ballSpeed
+    }
+    
+    func getBallSpeedForLevel(_ level: Int) -> Float {
+        switch level {
+        case 1: return 8.0
+        case 2: return 15.0
+        case 3: return 20.0
+        case 4: return 24.0
+        case 5: return 27.0
+        default: return 8.0
+        }
+    }
+    
+    func calculateFlightDistance() -> Float {
+        // Approximate distance from spawn point to goal
+        // Start Z: -25 to -15 (average -20), Target Z: 2.0 + 1.8 = 3.8
+        // Distance = |3.8 - (-20)| = 23.8 meters
+        return 23.8
+    }
+    
+    func getReactionTimeText() -> String {
+        let currentReactionTime = getReactionTime(for: currentLevel)
+        
+        if levelPassed() {
+            return String(format: "You have a minimum %.2f second reaction time", currentReactionTime)
+        } else {
+            if currentLevel > 1 {
+                let previousReactionTime = getReactionTime(for: currentLevel - 1)
+                return String(format: "You have %.2f to %.2f second reaction time range", 
+                            currentReactionTime, previousReactionTime)
+            } else {
+                return String(format: "You have %.2f second reaction time", currentReactionTime)
+            }
         }
     }
     
@@ -131,12 +174,25 @@ class GameState: ObservableObject {
             currentPhase = .levelComplete
             stopGameTimer()
             stopCountdownTimer()
+            
+            // Show reaction time feedback
+            let reactionTimeInfo = getReactionTimeText()
+            if levelPassed() {
+                print("🎉 Level \(currentLevel) PASSED! \(reactionTimeInfo)")
+                feedbackText = "LEVEL \(currentLevel) PASSED!\n\(reactionTimeInfo)"
+                feedbackColor = .green
+            } else {
+                print("❌ Level \(currentLevel) FAILED! \(reactionTimeInfo)")
+                feedbackText = "LEVEL \(currentLevel) FAILED!\n\(reactionTimeInfo)"
+                feedbackColor = .red
+            }
+            showFeedback = true
         }
     }
     
     func ballSaved() {
-        levelScore += 1
-        totalScore += 1
+        levelScore += 100
+        totalScore += 100
         ballsCompleted += 1
         checkLevelComplete()
     }
@@ -147,7 +203,7 @@ class GameState: ObservableObject {
     }
     
     func nextLevel() {
-        if currentLevel >= 3 {
+        if currentLevel >= 5 {
             // Game completed!
             currentPhase = .gameComplete
         } else {
@@ -173,7 +229,7 @@ class GameState: ObservableObject {
     }
     
     func levelPassed() -> Bool {
-        return levelScore >= 5
+        return levelScore >= 500
     }
     
     // MARK: - Ball System

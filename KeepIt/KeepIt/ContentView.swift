@@ -104,13 +104,18 @@ struct GameplayView: View {
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
                         .foregroundStyle(.white.opacity(0.9))
                     
-                    Text("SCORE: \(gameState.levelScore)/\(gameState.ballsCompleted)")
+                    Text("SCORE: \(gameState.levelScore)/\((gameState.ballsCompleted*100))")
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
                         .foregroundStyle(.green)
                     
                     Text("TOTAL: \(gameState.totalScore)")
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
                         .foregroundStyle(.white.opacity(0.8))
+                    
+                    // Current level reaction time
+                    Text("RT: \(String(format: "%.2f", gameState.getReactionTime(for: gameState.currentLevel)))s")
+                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                        .foregroundStyle(.cyan)
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
@@ -162,7 +167,7 @@ struct GameplayView: View {
                     Spacer()
                     
                     Text(gameState.feedbackText)
-                        .font(.system(size: 120, weight: .bold, design: .rounded))
+                        .font(.system(size: gameState.feedbackText.contains("\n") ? 60 : 120, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
                                 colors: [gameState.feedbackColor, gameState.feedbackColor.opacity(0.8)],
@@ -171,8 +176,10 @@ struct GameplayView: View {
                             )
                         )
                         .shadow(color: .black.opacity(0.8), radius: 15, x: 0, y: 6)
-                        .scaleEffect(1.2)
+                        .scaleEffect(gameState.feedbackText.contains("\n") ? 1.0 : 1.2)
                         .animation(.spring(response: 0.3, dampingFraction: 0.6), value: gameState.showFeedback)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 20)
                     
                     Spacer()
                 }
@@ -196,50 +203,65 @@ struct LevelCompleteView: View {
     
     var body: some View {
         VStack(spacing: 30) {
-            Text("Level \(gameState.currentLevel) Complete!")
-                .font(.system(size: 40, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
-            
-            Text("Score: \(gameState.levelScore)/10")
-                .font(.system(size: 24, weight: .semibold))
-                .foregroundStyle(.white)
-            
             if gameState.levelPassed() {
-                Text("WELL DONE!")
-                    .font(.system(size: 28, weight: .bold))
+                Text("Level \(gameState.currentLevel) Passed!")
+                    .font(.largeTitle)
                     .foregroundStyle(.green)
+                    .fontWeight(.bold)
+            } else {
+                Text("Level \(gameState.currentLevel) Failed!")
+                    .font(.largeTitle)
+                    .foregroundStyle(.red)
+                    .fontWeight(.bold)
+            }
+            
+            VStack(spacing: 15) {
+                Text("Level Score: \(gameState.levelScore)")
+                    .font(.title2)
+                    .foregroundStyle(.white)
                 
-                VStack(spacing: 20) {
-                    if gameState.currentLevel < 3 {
-                        Button("NEXT LEVEL") {
+                Text("Total Score: \(gameState.totalScore)")
+                    .font(.title2)
+                    .foregroundStyle(.yellow)
+                
+                // Reaction Time Information
+                Text(gameState.getReactionTimeText())
+                    .font(.title3)
+                    .foregroundStyle(.cyan)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 20)
+            }
+            .padding()
+            .background(Color.black.opacity(0.6))
+            .cornerRadius(15)
+            
+            HStack(spacing: 20) {
+                if gameState.levelPassed() {
+                    if gameState.currentLevel < 5 {
+                        Button("Next Level") {
+                            gameState.nextLevel()
+                        }
+                        .buttonStyle(MenuButtonStyle())
+                    } else {
+                        Button("Complete Game") {
                             gameState.nextLevel()
                         }
                         .buttonStyle(MenuButtonStyle())
                     }
-                    
-                    Button("END GAME") {
-                        gameState.returnToMenu()
-                    }
-                    .buttonStyle(MenuButtonStyle())
-                }
-            } else {
-                Text("NEED 5/10 TO PASS")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(.red)
-                
-                VStack(spacing: 20) {
-                    Button("TRY AGAIN") {
+                } else {
+                    Button("Retry Level") {
                         gameState.retryLevel()
                     }
                     .buttonStyle(MenuButtonStyle())
-                    
-                    Button("END GAME") {
-                        gameState.returnToMenu()
-                    }
-                    .buttonStyle(MenuButtonStyle())
                 }
+                
+                Button("Main Menu") {
+                    gameState.returnToMenu()
+                }
+                .buttonStyle(MenuButtonStyle())
             }
         }
+        .padding()
     }
 }
 
@@ -248,32 +270,48 @@ struct GameCompleteView: View {
     
     var body: some View {
         VStack(spacing: 30) {
-            Text("🎉 CONGRATULATIONS! 🎉")
-                .font(.system(size: 32, weight: .bold, design: .rounded))
+            Text("🏆 Game Complete! 🏆")
+                .font(.largeTitle)
                 .foregroundStyle(.yellow)
+                .fontWeight(.bold)
             
-            Text("YOU HAVE THE REACTION")
-                .font(.system(size: 24, weight: .bold))
+            Text("Congratulations!")
+                .font(.title)
                 .foregroundStyle(.white)
             
-            Text("OF A 13 YEAR OLD CHILD")
-                .font(.system(size: 24, weight: .bold))
-                .foregroundStyle(.white)
-            
-            Text("Total Score: \(gameState.totalScore)/30")
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(.green)
-            
-            Button("PLAY AGAIN") {
-                gameState.startNewGame()
+            VStack(spacing: 15) {
+                Text("Final Score: \(gameState.totalScore)")
+                    .font(.title2)
+                    .foregroundStyle(.yellow)
+                
+                Text("All 5 levels completed!")
+                    .font(.title3)
+                    .foregroundStyle(.green)
+                
+                // Show final reaction time achievement
+                Text("You achieved a best reaction time of \(String(format: "%.2f", gameState.getReactionTime(for: 5))) seconds!")
+                    .font(.title3)
+                    .foregroundStyle(.cyan)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 20)
             }
-            .buttonStyle(MenuButtonStyle())
+            .padding()
+            .background(Color.black.opacity(0.6))
+            .cornerRadius(15)
             
-            Button("MAIN MENU") {
-                gameState.returnToMenu()
+            HStack(spacing: 20) {
+                Button("Play Again") {
+                    gameState.startNewGame()
+                }
+                .buttonStyle(MenuButtonStyle())
+                
+                Button("Main Menu") {
+                    gameState.returnToMenu()
+                }
+                .buttonStyle(MenuButtonStyle())
             }
-            .buttonStyle(MenuButtonStyle())
         }
+        .padding()
     }
 }
 
