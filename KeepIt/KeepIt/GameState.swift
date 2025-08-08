@@ -169,6 +169,22 @@ class GameState: ObservableObject {
         }
     }
     
+    // Helper functions to get formatted reaction time components
+    func getReactionTimeComponents() -> (prefix: String, numbers: [Float], suffix: String) {
+        let currentReactionTime = getReactionTime(for: currentLevel)
+        
+        if levelPassed() {
+            return ("You have a minimum ", [currentReactionTime], " second reaction time")
+        } else {
+            if currentLevel > 1 {
+                let previousReactionTime = getReactionTime(for: currentLevel - 1)
+                return ("You have ", [currentReactionTime, previousReactionTime], " second reaction time range")
+            } else {
+                return ("You have ", [currentReactionTime], " second reaction time")
+            }
+        }
+    }
+    
     func checkLevelComplete() {
         if ballsCompleted >= 10 {
             currentPhase = .levelComplete

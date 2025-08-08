@@ -112,10 +112,18 @@ struct GameplayView: View {
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
                         .foregroundStyle(.white.opacity(0.8))
                     
-                    // Current level reaction time
-                    Text("RT: \(String(format: "%.2f", gameState.getReactionTime(for: gameState.currentLevel)))s")
-                        .font(.system(size: 14, weight: .medium, design: .rounded))
-                        .foregroundStyle(.cyan)
+                    // Current level reaction time with larger numbers
+                    HStack(spacing: 2) {
+                        Text("RT: ")
+                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                            .foregroundStyle(.orange)
+                        Text(String(format: "%.2f", gameState.getReactionTime(for: gameState.currentLevel)))
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .foregroundStyle(.orange)
+                        Text("s")
+                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                            .foregroundStyle(.orange)
+                    }
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
@@ -224,12 +232,51 @@ struct LevelCompleteView: View {
                     .font(.title2)
                     .foregroundStyle(.yellow)
                 
-                // Reaction Time Information
-                Text(gameState.getReactionTimeText())
-                    .font(.title3)
-                    .foregroundStyle(.cyan)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 20)
+                // Reaction Time Information with larger numbers
+                VStack(spacing: 5) {
+                    let components = gameState.getReactionTimeComponents()
+                    
+                    if components.numbers.count == 1 {
+                        // Single number case
+                        HStack(spacing: 4) {
+                            Text(components.prefix)
+                                .font(.title3)
+                                .foregroundStyle(.cyan)
+                            Text(String(format: "%.2f", components.numbers[0]))
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.cyan)
+                            Text(components.suffix)
+                                .font(.title3)
+                                .foregroundStyle(.cyan)
+                        }
+                    } else {
+                        // Two numbers case (range)
+                        VStack(spacing: 2) {
+                            HStack(spacing: 4) {
+                                Text(components.prefix)
+                                    .font(.title3)
+                                    .foregroundStyle(.cyan)
+                                Text(String(format: "%.2f", components.numbers[0]))
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(.cyan)
+                                Text("to")
+                                    .font(.title3)
+                                    .foregroundStyle(.cyan)
+                                Text(String(format: "%.2f", components.numbers[1]))
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(.cyan)
+                            }
+                            Text(components.suffix)
+                                .font(.title3)
+                                .foregroundStyle(.cyan)
+                        }
+                    }
+                }
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 20)
             }
             .padding()
             .background(Color.black.opacity(0.6))
@@ -288,12 +335,23 @@ struct GameCompleteView: View {
                     .font(.title3)
                     .foregroundStyle(.green)
                 
-                // Show final reaction time achievement
-                Text("You achieved a best reaction time of \(String(format: "%.2f", gameState.getReactionTime(for: 5))) seconds!")
-                    .font(.title3)
-                    .foregroundStyle(.cyan)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 20)
+                // Show final reaction time achievement with larger number
+                VStack(spacing: 5) {
+                    HStack(spacing: 4) {
+                        Text("You achieved a best reaction time of")
+                            .font(.title3)
+                            .foregroundStyle(.cyan)
+                        Text(String(format: "%.2f", gameState.getReactionTime(for: 5)))
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.cyan)
+                        Text("seconds!")
+                            .font(.title3)
+                            .foregroundStyle(.cyan)
+                    }
+                }
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 20)
             }
             .padding()
             .background(Color.black.opacity(0.6))

@@ -157,14 +157,14 @@ extension ImmersiveView {
     func setupHandSpheres(content: RealityViewContent) {
         // Left hand sphere
         let leftAnchor = AnchorEntity(.hand(.left, location: .palm))
-        let leftSphere = createHandSphere(color: .blue, name: "LeftHandSphere")
+        let leftSphere = createHandSphere(color: UIColor.blue.withAlphaComponent(0), name: "LeftHandSphere")
         leftAnchor.addChild(leftSphere)
         content.add(leftAnchor)
         leftHandAnchor = leftAnchor
         
         // Right hand sphere  
         let rightAnchor = AnchorEntity(.hand(.right, location: .palm))
-        let rightSphere = createHandSphere(color: .green, name: "RightHandSphere")
+        let rightSphere = createHandSphere(color: UIColor.green.withAlphaComponent(0), name: "RightHandSphere")
         rightAnchor.addChild(rightSphere)
         content.add(rightAnchor)
         rightHandAnchor = rightAnchor
@@ -176,7 +176,8 @@ extension ImmersiveView {
         let sphere = MeshResource.generateSphere(radius: 0.1) // 10cm diameter
         
         var material = UnlitMaterial()
-        material.color = .init(tint: color.withAlphaComponent(0.5))
+        material.color = .init(tint: color.withAlphaComponent(0))
+        material.blending = .transparent(opacity: 0.0)
         
         let sphereEntity = ModelEntity(mesh: sphere, materials: [material])
         sphereEntity.name = name
