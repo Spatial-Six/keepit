@@ -114,7 +114,7 @@ struct GameplayView: View {
                     
                     // Current level reaction time with larger numbers
                     HStack(spacing: 2) {
-                        Text("RT: ")
+                        Text("TARGET RT: ")
                             .font(.system(size: 14, weight: .medium, design: .rounded))
                             .foregroundStyle(.orange)
                         Text(String(format: "%.2f", gameState.getReactionTime(for: gameState.currentLevel)))
